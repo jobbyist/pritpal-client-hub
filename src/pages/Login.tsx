@@ -1,24 +1,76 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { signIn, signUp, user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // This would integrate with Supabase authentication once connected
-    console.log("Login attempt:", { username, password });
+    setLoading(true);
+
+    try {
+      let result;
+      if (isSignUp) {
+        result = await signUp(email, password);
+        if (!result.error) {
+          toast({
+            title: "Success!",
+            description: "Please check your email to confirm your account.",
+          });
+        }
+      } else {
+        result = await signIn(email, password);
+        if (!result.error) {
+          toast({
+            title: "Welcome back!",
+            description: "You have successfully signed in.",
+          });
+        }
+      }
+
+      if (result.error) {
+        toast({
+          title: "Error",
+          description: result.error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSocialLogin = (provider: string) => {
-    // This would integrate with Supabase social auth once connected
-    console.log(`${provider} login attempt`);
+    toast({
+      title: "Coming Soon",
+      description: `${provider} authentication will be available soon.`,
+    });
   };
 
   return (
@@ -35,26 +87,28 @@ const Login = () => {
         <Card className="border-0 shadow-[var(--shadow-elevated)] bg-card/95 backdrop-blur-sm">
           <CardHeader className="text-center space-y-4">
             <CardTitle className="text-2xl font-bold text-primary">
-              SECURE CLIENT PORTAL
+              {isSignUp ? "CREATE ACCOUNT" : "SECURE CLIENT PORTAL"}
             </CardTitle>
             <CardDescription className="text-muted-foreground text-sm leading-relaxed">
-              View your account information, send/request updates on your matter, store important legal 
-              documents, manage or pay your bills and view your transaction history. More features coming soon.
+              {isSignUp 
+                ? "Create your account to access the secure client portal."
+                : "View your account information, send/request updates on your matter, store important legal documents, manage or pay your bills and view your transaction history. More features coming soon."
+              }
             </CardDescription>
           </CardHeader>
           
           <CardContent className="space-y-6">
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-medium">
-                  Username
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email
                 </Label>
                 <Input
-                  id="username"
-                  type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="h-11 bg-background/50 border-border/50 focus:border-primary"
                   required
                 />
@@ -67,7 +121,7 @@ const Login = () => {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Password"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="h-11 bg-background/50 border-border/50 focus:border-primary"
@@ -79,10 +133,22 @@ const Login = () => {
                 type="submit" 
                 variant="professional" 
                 className="w-full h-12 text-base font-semibold tracking-wide"
+                disabled={loading}
               >
-                LAUNCH THE DASHBOARD
+                {loading ? "Loading..." : (isSignUp ? "CREATE ACCOUNT" : "LAUNCH THE DASHBOARD")}
               </Button>
             </form>
+
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-primary hover:underline"
+              >
+                {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
+              </Button>
+            </div>
 
             <div className="space-y-4">
               <div className="relative">

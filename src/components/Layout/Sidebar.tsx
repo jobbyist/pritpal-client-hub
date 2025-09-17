@@ -22,10 +22,12 @@ import {
   HelpCircle,
   LogOut,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import logo from "@/assets/logo.png";
 
 const AppSidebar = () => {
   const { state } = useSidebar();
+  const { signOut } = useAuth();
   const isCollapsed = state === "collapsed";
   const location = useLocation();
   const currentPath = location.pathname;
@@ -113,7 +115,7 @@ const AppSidebar = () => {
           <SidebarMenuButton asChild>
             <button 
               className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              onClick={() => console.log("Logout")}
+              onClick={signOut}
             >
               <LogOut className="h-4 w-4" />
               {!isCollapsed && <span>Logout</span>}
