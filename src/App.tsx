@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Cases from "./pages/Cases";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 import AppSidebar from "./components/Layout/Sidebar";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -41,10 +43,10 @@ const AppContent = () => {
             <main className="flex-1 p-6 overflow-auto">
               <Routes>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/cases" element={<div>Cases Page - Coming Soon</div>} />
+                <Route path="/cases" element={<Cases />} />
+                <Route path="/messages" element={<Messages />} />
                 <Route path="/documents" element={<div>Documents Page - Coming Soon</div>} />
                 <Route path="/calendar" element={<div>Calendar Page - Coming Soon</div>} />
-                <Route path="/messages" element={<div>Messages Page - Coming Soon</div>} />
                 <Route path="/billing" element={<div>Billing Page - Coming Soon</div>} />
                 <Route path="/profile" element={<div>Profile Page - Coming Soon</div>} />
                 <Route path="/settings" element={<div>Settings Page - Coming Soon</div>} />

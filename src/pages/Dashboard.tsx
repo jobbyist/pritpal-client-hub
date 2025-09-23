@@ -3,14 +3,25 @@ import RecentCases from "@/components/Dashboard/RecentCases";
 import RecentMessages from "@/components/Dashboard/RecentMessages";
 import UpcomingTasks from "@/components/Dashboard/UpcomingTasks";
 import PaymentHistory from "@/components/Dashboard/PaymentHistory";
+import { useProfile } from "@/hooks/useProfile";
 
 const Dashboard = () => {
+  const { profile, loading } = useProfile();
+
+  const getDisplayName = () => {
+    if (loading) return "Loading...";
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
+    return "Client";
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-foreground">
-          Welcome back, John
+          Welcome back, {getDisplayName()}
         </h1>
         <p className="text-muted-foreground">
           Here's an overview of your legal matters and recent activity.
