@@ -14,7 +14,296 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      billing: {
+        Row: {
+          amount: number
+          case_id: string | null
+          client_id: string
+          created_at: string
+          description: string
+          due_date: string
+          hourly_rate: number | null
+          hours_worked: number | null
+          id: string
+          invoice_number: string
+          payment_date: string | null
+          payment_method: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          case_id?: string | null
+          client_id: string
+          created_at?: string
+          description: string
+          due_date: string
+          hourly_rate?: number | null
+          hours_worked?: number | null
+          id?: string
+          invoice_number: string
+          payment_date?: string | null
+          payment_method?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          case_id?: string | null
+          client_id?: string
+          created_at?: string
+          description?: string
+          due_date?: string
+          hourly_rate?: number | null
+          hours_worked?: number | null
+          id?: string
+          invoice_number?: string
+          payment_date?: string | null
+          payment_method?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      cases: {
+        Row: {
+          assigned_attorney: string | null
+          case_number: string
+          case_type: string
+          case_value: number | null
+          client_id: string
+          court_name: string | null
+          created_at: string
+          description: string | null
+          id: string
+          next_hearing_date: string | null
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_attorney?: string | null
+          case_number: string
+          case_type: string
+          case_value?: number | null
+          client_id: string
+          court_name?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          next_hearing_date?: string | null
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_attorney?: string | null
+          case_number?: string
+          case_type?: string
+          case_value?: number | null
+          client_id?: string
+          court_name?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          next_hearing_date?: string | null
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cases_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          case_id: string | null
+          client_id: string
+          created_at: string
+          description: string | null
+          document_type: string
+          file_path: string | null
+          file_size: number | null
+          id: string
+          is_confidential: boolean | null
+          mime_type: string | null
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          case_id?: string | null
+          client_id: string
+          created_at?: string
+          description?: string | null
+          document_type: string
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          is_confidential?: boolean | null
+          mime_type?: string | null
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          case_id?: string | null
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          document_type?: string
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          is_confidential?: boolean | null
+          mime_type?: string | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          case_id: string | null
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          is_urgent: boolean | null
+          message_type: string | null
+          parent_message_id: string | null
+          recipient_id: string
+          sender_id: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          case_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          is_urgent?: boolean | null
+          message_type?: string | null
+          parent_message_id?: string | null
+          recipient_id: string
+          sender_id: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          is_urgent?: boolean | null
+          message_type?: string | null
+          parent_message_id?: string | null
+          recipient_id?: string
+          sender_id?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_parent_message_id_fkey"
+            columns: ["parent_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          created_at: string
+          date_of_birth: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
