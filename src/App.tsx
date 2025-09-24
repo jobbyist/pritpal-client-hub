@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Cases from "./pages/Cases";
 import Messages from "./pages/Messages";
+import Setup from "./pages/Setup";
 import NotFound from "./pages/NotFound";
 import AppSidebar from "./components/Layout/Sidebar";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -20,11 +21,12 @@ const AppContent = () => {
   const { user } = useAuth();
   const isLoginPage = location.pathname === "/" || location.pathname === "/login";
 
-  if (isLoginPage) {
+  if (isLoginPage || location.pathname === "/setup") {
     return (
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/setup" element={<Setup />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     );

@@ -1,31 +1,55 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    // Create a Supabase client with the service role key for admin operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
+    // First check if admin user already exists
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
+    const adminExists = existingUsers.users?.find(user => user.email === 'admin@pritsinghlaw.com')
+
+    if (adminExists) {
+      console.log('Admin user already exists:', adminExists.id)
+      
+      // Call the sample data setup function for existing user
+      const { error: setupError } = await supabaseAdmin.rpc('setup_sample_data_for_user', {
+        user_uuid: adminExists.id
+      })
+
+      if (setupError) {
+        console.error('Setup error:', setupError)
       }
-    })
 
-    console.log('Creating admin user...')
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          user: adminExists,
+          message: 'Admin user already exists, sample data updated'
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
 
     // Create the admin user
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: 'admin@pritsinghlaw.com',
       password: 'IronHorse1901!',
       email_confirm: true,
@@ -38,61 +62,48 @@ Deno.serve(async (req) => {
     if (authError) {
       console.error('Auth error:', authError)
       return new Response(
-        JSON.stringify({ error: 'Failed to create user', details: authError }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: authError.message }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
       )
     }
 
-    const userId = authData.user.id
-    console.log('Admin user created with ID:', userId)
+    console.log('Admin user created:', authData.user?.id)
 
-    // Update all sample data to use the real user ID
-    const { error: updateCasesError } = await supabase
-      .from('cases')
-      .update({ client_id: userId })
-      .eq('client_id', '00000000-0000-0000-0000-000000000000')
-
-    if (updateCasesError) {
-      console.error('Error updating cases:', updateCasesError)
-    }
-
-    const { error: updateBillingError } = await supabase
-      .from('billing')
-      .update({ client_id: userId })
-      .eq('client_id', '00000000-0000-0000-0000-000000000000')
-
-    if (updateBillingError) {
-      console.error('Error updating billing:', updateBillingError)
-    }
-
-    const { error: updateMessagesError } = await supabase
-      .from('messages')
-      .update({ 
-        sender_id: userId,
-        recipient_id: userId 
+    // Set up sample data for the new admin user
+    const adminUserId = authData.user?.id
+    if (adminUserId) {
+      const { error: setupError } = await supabaseAdmin.rpc('setup_sample_data_for_user', {
+        user_uuid: adminUserId
       })
-      .eq('sender_id', '00000000-0000-0000-0000-000000000000')
 
-    if (updateMessagesError) {
-      console.error('Error updating messages:', updateMessagesError)
+      if (setupError) {
+        console.error('Sample data setup error:', setupError)
+      }
     }
-
-    console.log('Sample data updated successfully')
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Admin user created and sample data updated successfully',
-        userId: userId
+        user: authData.user,
+        message: 'Admin user created successfully with sample data'
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     )
 
   } catch (error) {
-    console.error('Unexpected error:', error)
+    console.error('Function error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: error.message }), 
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     )
   }
 })
